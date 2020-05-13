@@ -35,7 +35,7 @@
 
 // I N C L U D E S /////////////////////////////////////////////////
 
-#include "DepthMap.h"
+#include "SceneDensify.h"
 #include "Mesh.h"
 
 
@@ -45,6 +45,9 @@
 // S T R U C T S ///////////////////////////////////////////////////
 
 namespace MVS {
+
+// Forward declarations
+struct MVS_API DenseDepthMapData;
 
 class MVS_API Scene
 {
@@ -62,22 +65,27 @@ public:
 	inline Scene(unsigned _nMaxThreads=0) : nMaxThreads(Thread::getMaxThreads(_nMaxThreads)) {}
 
 	void Release();
+	bool IsEmpty() const;
 
 	bool LoadInterface(const String& fileName);
-	bool SaveInterface(const String& fileName) const;
+	bool SaveInterface(const String& fileName, int version=-1) const;
 
-	bool Load(const String& fileName);
+	bool Import(const String& fileName);
+
+	bool Load(const String& fileName, bool bImport=false);
 	bool Save(const String& fileName, ARCHIVE_TYPE type=ARCHIVE_BINARY_ZIP) const;
 
-	bool SelectNeighborViews(uint32_t ID, IndexArr& points, unsigned nMinViews=3, unsigned nMinPointViews=2, float fOptimAngle=FD2R(12));
-	static bool FilterNeighborViews(ViewScoreArr& neighbors, float fMinArea=0.12f, float fMinScale=0.2f, float fMaxScale=2.4f, float fMinAngle=FD2R(3), float fMaxAngle=FD2R(45), unsigned nMaxViews=12);
+	bool SelectNeighborViews(uint32_t ID, IndexArr& points, unsigned nMinViews=3, unsigned nMinPointViews=2, float fOptimAngle=FD2R(10));
+	static bool FilterNeighborViews(ViewScoreArr& neighbors, float fMinArea=0.1f, float fMinScale=0.2f, float fMaxScale=2.4f, float fMinAngle=FD2R(3), float fMaxAngle=FD2R(45), unsigned nMaxViews=12);
 
 	bool ExportCamerasMLP(const String& fileName, const String& fileNameScene) const;
 
 	// Dense reconstruction
-	bool DenseReconstruction();
+	bool DenseReconstruction(int nFusionMode=0);
+	bool ComputeDepthMaps(DenseDepthMapData& data);
 	void DenseReconstructionEstimate(void*);
 	void DenseReconstructionFilter(void*);
+	void PointCloudFilter(int thRemove=-1);
 
 	// Mesh reconstruction
 	bool ReconstructMesh(float distInsert=2, bool bUseFreeSpaceSupport=true, unsigned nItersFixNonManifold=4,

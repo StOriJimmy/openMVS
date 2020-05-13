@@ -11,6 +11,13 @@
 #include "ImageTIFF.h"
 
 extern "C" {
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+#include <tiffconf.h>
+#undef TIFF_INT64_T
+#define TIFF_INT64_T int64_t
+#undef TIFF_UINT64_T
+#define TIFF_UINT64_T uint64_t
+#endif
 #include <tiffio.h>
 }
 
@@ -437,7 +444,7 @@ HRESULT CImageTIFF::ReadHeader()
 } // ReadHeader
 /*----------------------------------------------------------------*/
 
-HRESULT CImageTIFF::ReadData(void* pData, PIXELFORMAT dataFormat, UINT nStride, UINT lineWidth)
+HRESULT CImageTIFF::ReadData(void* pData, PIXELFORMAT dataFormat, Size nStride, Size lineWidth)
 {
 	if (m_state && m_width && m_height) {
 		TIFF* tif = (TIFF*)m_state;
@@ -476,7 +483,7 @@ HRESULT CImageTIFF::ReadData(void* pData, PIXELFORMAT dataFormat, UINT nStride, 
 			uint8_t* data = (uint8_t*)pData;
 			if (!is_tiled && tile_height0 == 1 && dataFormat == m_format && nStride == m_stride) {
 				// read image directly to the data buffer
-				for (UINT j=0; j<m_height; ++j, data+=lineWidth)
+				for (Size j=0; j<m_height; ++j, data+=lineWidth)
 					if (!TIFFReadRGBAStrip(tif, j, (uint32*)data)) {
 						Close();
 						return _INVALIDFILE;
@@ -543,14 +550,14 @@ HRESULT CImageTIFF::ReadData(void* pData, PIXELFORMAT dataFormat, UINT nStride, 
 } // Read
 /*----------------------------------------------------------------*/
 
-HRESULT CImageTIFF::WriteHeader(PIXELFORMAT imageFormat, UINT width, UINT height, BYTE numLevels)
+HRESULT CImageTIFF::WriteHeader(PIXELFORMAT imageFormat, Size width, Size height, BYTE numLevels)
 {
 	//TODO: to implement the TIFF encoder
 	return _OK;
 } // WriteHeader
 /*----------------------------------------------------------------*/
 
-HRESULT CImageTIFF::WriteData(void* pData, PIXELFORMAT dataFormat, UINT nStride, UINT lineWidth)
+HRESULT CImageTIFF::WriteData(void* pData, PIXELFORMAT dataFormat, Size nStride, Size lineWidth)
 {
 	//TODO: to implement the TIFF encoder
 	return _OK;
