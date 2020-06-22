@@ -628,6 +628,8 @@ bool MeshTexture::ListCameraFaces(FaceDataViewArr& facesDatas, float fOutlierThr
 		}
 		#endif
 		}
+
+		imageData.ReleaseImage();
 		++progress;
 	}
 	#ifdef TEXOPT_USE_OPENMP
@@ -1789,6 +1791,33 @@ void MeshTexture::GenerateTexture(bool bGlobalSeamLeveling, bool bLocalSeamLevel
 	// project patches in the corresponding view and compute texture-coordinates and bounding-box
 	const int border(2);
 	faceTexcoords.Resize(faces.GetSize()*3);
+
+	std::set<int> labels_set;
+	for (TexturePatch *pTexturePatch = texturePatches.Begin(), *pTexturePatchEnd = texturePatches.End() - 1; pTexturePatch < pTexturePatchEnd; ++pTexturePatch) {
+		TexturePatch& texturePatch = *pTexturePatch;
+		labels_set.insert(texturePatch.label);
+	}
+	std::cout << labels_set.size() << " images for texturing\n";
+
+	std::vector<int> labels(labels_set.begin(), labels_set.end());
+	for (auto label : labels) {
+		std::cout << label << " ";
+	}
+	std::cout << std::endl;
+
+#ifdef TEXOPT_USE_OPENMP
+	const unsigned numLabels(labels.size());
+#pragma omp parallel for schedule(dynamic)
+	for (int_t idx = 0; idx < (int_t)numLabels; ++idx) {
+#else
+	for (size_t idx = 0; idx < labels.size(); ++idx) {
+#endif
+		Image& imageData = images[labels[idx]];
+		unsigned level(nResolutionLevel);
+		const unsigned imageSize(imageData.RecomputeMaxResolution(level, nMinResolution));
+		imageData.ReloadImage(imageSize);
+	}
+
 	#ifdef TEXOPT_USE_OPENMP
 	const unsigned numPatches(texturePatches.GetSize()-1);
 	#pragma omp parallel for schedule(dynamic)
@@ -1798,7 +1827,9 @@ void MeshTexture::GenerateTexture(bool bGlobalSeamLeveling, bool bLocalSeamLevel
 	for (TexturePatch *pTexturePatch=texturePatches.Begin(), *pTexturePatchEnd=texturePatches.End()-1; pTexturePatch<pTexturePatchEnd; ++pTexturePatch) {
 		TexturePatch& texturePatch = *pTexturePatch;
 	#endif
+		
 		const Image& imageData = images[texturePatch.label];
+
 		// project vertices and compute bounding-box
 		AABB2f aabb(true);
 		FOREACHPTR(pIdxFace, texturePatch.faces) {

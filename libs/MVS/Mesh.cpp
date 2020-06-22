@@ -996,8 +996,8 @@ void Mesh::Clean(float fDecimate, float fSpurious, bool bRemoveSpikes, unsigned 
 		ASSERT(fDecimate > 0);
 		vcg::tri::TriEdgeCollapseQuadricParameter pp;
 		pp.QualityThr = 0.3; // Quality Threshold for penalizing bad shaped faces: the value is in the range [0..1], 0 accept any kind of face (no penalties), 0.5 penalize faces with quality < 0.5, proportionally to their shape
-		pp.PreserveBoundary = false; // the simplification process tries to not affect mesh boundaries during simplification
-		pp.BoundaryWeight = 1; // the importance of the boundary during simplification: the value is in the range (0..+inf), default (1.0) means that the boundary has the same importance as the rest; values greater than 1.0 raise boundary importance and has the effect of removing less vertices on the border
+		pp.PreserveBoundary = true; // the simplification process tries to not affect mesh boundaries during simplification
+		pp.BoundaryQuadricWeight = 5; // the importance of the boundary during simplification: the value is in the range (0..+inf), default (1.0) means that the boundary has the same importance as the rest; values greater than 1.0 raise boundary importance and has the effect of removing less vertices on the border
 		pp.PreserveTopology = false; // avoid all collapses that cause a topology change in the mesh (like closing holes, squeezing handles, etc); if checked the genus of the mesh should stay unchanged
 		pp.QualityWeight = false; // use the Per-Vertex quality as a weighting factor for the simplification: the weight is used as an error amplification value, so a vertex with a high quality value will not be simplified and a portion of the mesh with low quality values will be aggressively simplified
 		pp.NormalCheck = false; // try to avoid face flipping effects and try to preserve the original orientation of the surface

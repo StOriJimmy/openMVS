@@ -28,6 +28,8 @@
 #include <algorithm>
 #include "DataInterface.h"
 
+inline void Unix2Dos(TCHAR *strCmd) { size_t len = lstrlen(strCmd); for (size_t i = 0; i < len; i++) { if (strCmd[i] == '/') strCmd[i] = '\\'; } }
+
 namespace PBA {
 
 //File loader supports .nvm format and bundler format
@@ -191,6 +193,8 @@ bool LoadBundlerOut(const char* name, std::ifstream& in, std::vector<CameraT>& c
 
     char listpath[1024], filepath[1024];
     strcpy(listpath, name);
+	Unix2Dos(listpath);	// XYLIU
+
     char* ext = strstr(listpath, ".out");
     strcpy(ext, "-list.txt\0"); 
 
@@ -231,8 +235,10 @@ bool LoadBundlerOut(const char* name, std::ifstream& in, std::vector<CameraT>& c
 
         if(listin >> filepath && f != 0)
         {
+			Unix2Dos(filepath);	// XYLIU
+
             char* slash = strrchr(filepath , '/');
-            if(slash == NULL) slash = strchr(filepath, '\\');
+            if(slash == NULL) slash = strrchr(filepath, '\\');
             names[i] = (slash? (slash + 1) : filepath);
             std::getline(listin, token);
 
