@@ -301,8 +301,9 @@ int ImportSceneVSFM()
 		Util::ensureUnifySlash(image.name);
 		image.name = MAKE_PATH_FULL(WORKING_FOLDER_FULL, image.name);
 		if (!image.ReloadImage(0, false)) {
-			LOG("error: can not read image %s", image.name.c_str());
-			return false;
+			std::cerr << "error: can not read image: " << image.name << std::endl;
+			//LOG("error: can not read image %s", image.name.c_str());
+			//return false;
 		}
 		// set camera
 		image.platformID = scene.platforms.GetSize();
