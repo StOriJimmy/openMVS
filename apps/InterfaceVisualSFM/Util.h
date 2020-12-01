@@ -28,7 +28,7 @@
 #include <algorithm>
 #include "DataInterface.h"
 
-inline void Unix2Dos(TCHAR *strCmd) { size_t len = lstrlen(strCmd); for (size_t i = 0; i < len; i++) { if (strCmd[i] == '/') strCmd[i] = '\\'; } }
+inline void Dos2Unix(TCHAR *strCmd) { size_t len = lstrlen(strCmd); for (size_t i = 0; i < len; i++) { if (strCmd[i] == '\\') strCmd[i] = '/'; } }
 
 namespace PBA {
 
@@ -193,7 +193,7 @@ bool LoadBundlerOut(const char* name, std::ifstream& in, std::vector<CameraT>& c
 
     char listpath[1024], filepath[1024];
     strcpy(listpath, name);
-	Unix2Dos(listpath);	// XYLIU
+	Dos2Unix(listpath);	// XYLIU
 
     char* ext = strstr(listpath, ".out");
     strcpy(ext, "-list.txt\0"); 
@@ -202,7 +202,13 @@ bool LoadBundlerOut(const char* name, std::ifstream& in, std::vector<CameraT>& c
     std::ifstream listin(listpath);
     if(!listin.is_open())
     {
-        listin.close();       listin.clear(); 
+        listin.close(); listin.clear(); 
+        strcpy(ext, ".txt\0"); 
+        listin.open(listpath);
+    }
+    if(!listin.is_open())
+    {
+        listin.close(); listin.clear(); 
         char * slash = strrchr(listpath, '/');
         if(slash == NULL) slash = strrchr(listpath, '\\');
         slash = slash ? slash + 1 : listpath; 
@@ -235,11 +241,7 @@ bool LoadBundlerOut(const char* name, std::ifstream& in, std::vector<CameraT>& c
 
         if(listin >> filepath && f != 0)
         {
-			Unix2Dos(filepath);	// XYLIU
-
-            char* slash = strrchr(filepath , '/');
-            if(slash == NULL) slash = strrchr(filepath, '\\');
-            names[i] = (slash? (slash + 1) : filepath);
+            names[i] = filepath;
             std::getline(listin, token);
 
             if(!det_checked)
